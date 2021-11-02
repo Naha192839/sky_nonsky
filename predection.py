@@ -8,7 +8,9 @@ import shutil
 
 imsize = 224
 keras_param = "./model/ResNet50.h5"
-testpic = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/b1e9ee0e-67e26f2e.jpg"
+testpic = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/FILE210928-071156-M 1.jpg"
+files =[]
+types=["jpg"]
 
 def load_image(path):
     img = PIL.Image.open(path)
@@ -23,12 +25,30 @@ def load_image(path):
 
 model = keras.models.load_model(keras_param)
 
-img = load_image(testpic)
-prd = model.predict(np.array([img]))
-print(prd) # 精度の表示
-prelabel = np.argmax(prd, axis=1)
+# img = load_image(testpic)
+# prd = model.predict(np.array([img]))
+# print(prd) # 精度の表示
+# prelabel = np.argmax(prd, axis=1)
 
-if prelabel == 0:
-    print(">>> 空あり")
-elif prelabel == 1:
-    print(">>> 空なし")
+# if prelabel == 0:
+#     print(">>> 空あり")
+# elif prelabel == 1:
+#     print(">>> 空なし")
+
+photos_dir = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/210929"
+for ext in types:
+  file_path = os.path.join(photos_dir, '*.{}'.format(ext))
+  files.extend(glob.glob(file_path))
+
+for i in files:
+    img = load_image(i)
+    prd = model.predict(np.array([img]))
+    print(prd) # 精度の表示
+    prelabel = np.argmax(prd, axis=1)
+
+    if prelabel == 0:
+        shutil.move(i,"/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/空あり")
+        print(">>> 空あり")
+    elif prelabel == 1:
+        shutil.move(i,"/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/空なし")
+        print(">>> 空なし")
