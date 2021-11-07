@@ -2,9 +2,8 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import models, layers
-from tensorflow.keras.applications import ResNet50,VGG16
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,Conv2D,MaxPooling2D,ZeroPadding2D,BatchNormalization,Activation
+from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,Conv2D,MaxPooling2D,ZeroPadding2D,BatchNormalization,Activation,Cropping2D
 from tensorflow.keras import optimizers,regularizers
 from tensorflow.keras.callbacks import ReduceLROnPlateau,EarlyStopping, ModelCheckpoint
 import os , datetime
@@ -15,14 +14,14 @@ nb_classes = len(classes)
 
 train_data_dir = './dataset/train'
 validation_data_dir = './dataset/val'
-test_data_dir = './dataset/test'
+test_data_dir = './dataset/test2'
 model_dir = "./model"
 
 nb_train_samples = 1400
 nb_validation_samples = 200 
 img_width, img_height = 224, 224
 
-train_batch_size = 32
+train_batch_size = 64
 val_batch_size = 16
 
 # train用
@@ -40,7 +39,7 @@ test_datagen = ImageDataGenerator(rescale=1. / 255)
 
 train_generator = train_datagen.flow_from_directory(
   train_data_dir,
-  target_size=(img_width, img_height),
+  target_size=(img_height, img_width),
   color_mode='rgb',
   classes=classes,
   class_mode='categorical',
@@ -49,7 +48,7 @@ train_generator = train_datagen.flow_from_directory(
  
 validation_generator = val_datagen.flow_from_directory(
   validation_data_dir,
-  target_size=(img_width, img_height),
+  target_size=(img_height, img_width),
   color_mode='rgb',
   classes=classes,
   class_mode='categorical',
@@ -58,7 +57,7 @@ validation_generator = val_datagen.flow_from_directory(
 
 test_generator = test_datagen.flow_from_directory(
   test_data_dir,
-  target_size=(img_width, img_height),
+  target_size=(img_height, img_width),
   color_mode='rgb',
   classes=classes,
   class_mode='categorical',
@@ -67,7 +66,8 @@ test_generator = test_datagen.flow_from_directory(
 
  
 model = Sequential()
-model.add(ZeroPadding2D(padding=(3, 3),input_shape=(img_width, img_height, 3)))
+model.add(Cropping2D(cropping=((112,0), (0,0)),input_shape=(img_height, img_width, 3)))
+model.add(ZeroPadding2D(padding=(3, 3)))
 model.add(Conv2D(32, (7, 7),strides=(2, 2),kernel_initializer='he_normal'))
 model.add(Activation('relu'))
 model.add(ZeroPadding2D(padding=(1,1)))
@@ -95,19 +95,19 @@ model.summary()
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
                               patience=5, min_lr=0.001)
 
-checkpoint = ModelCheckpoint(
-    filepath = os.path.join(
-        model_dir,
-        'model_{epoch:02d}.hdf5'
-    ),
-    save_best_only=True
-)
+# checkpoint = ModelCheckpoint(
+#     filepath = os.path.join(
+#         model_dir,
+#         'model_{epoch:02d}.hdf5'
+#     ),
+#     save_best_only=True
+# )
 
 #TO early stopping
 early_stopping = EarlyStopping(monitor='val_loss',patience=5,verbose=0,mode='auto')
 
 model.compile(loss='categorical_crossentropy',
-              optimizer=optimizers.SGD(lr=0.0001, momentum=0.9,decay=0.0002),
+              optimizer=optimizers.SGD(lr=0.001, momentum=0.0009,decay=0.0002),
               metrics=['accuracy'])
 # steps_per_epoch: 1エポックを宣言してから次のエポックの開始前までにgeneratorから生成されるサンプル (サンプルのバッチ) の総数．
 # 典型的には，データにおけるユニークなサンプル数をバッチサイズで割った値です． 
@@ -144,4 +144,4 @@ plt.xlabel('Epoch')
 plt.legend(['Train', 'Val'], loc='upper left')
 plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
 
-model.save('./model/ResNet50.h5')    
+# model.save('./model/cnn.h5')    
