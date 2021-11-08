@@ -144,4 +144,4 @@ plt.xlabel('Epoch')
 plt.legend(['Train', 'Val'], loc='upper left')
 plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
 
-# model.save('./model/cnn.h5')    
+model.save('./model/bottom_cnn.h5')    

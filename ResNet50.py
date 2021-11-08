@@ -6,7 +6,7 @@ from tensorflow.keras.applications import ResNet50
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,GlobalAveragePooling2D
 from tensorflow.keras import optimizers,regularizers
-from tensorflow.keras.callbacks import ReduceLROnPlateau,EarlyStopping, ModelCheckpoint
+from tensorflow.keras.callbacks import ReduceLROnPlateau,EarlyStopping
 import os , datetime
 
 classes = ['空あり','空なし'] #分類するクラス
@@ -80,20 +80,12 @@ predictions = Dense(nb_classes, activation='softmax')(x)
 model = Model(resnet50.input, predictions)
 
 model.compile(loss='binary_crossentropy',
-              optimizer=optimizers.SGD(lr=0.000001, momentum=0.9,decay=0.0002),
+              optimizer=optimizers.SGD(lr=0.00002, momentum=0.9,decay=0.0002),
               metrics=['accuracy'])
 model.summary()
 
 reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=5, min_lr=0.001)
-
-checkpoint = ModelCheckpoint(
-    filepath = os.path.join(
-        model_dir,
-        'model_{epoch:02d}.hdf5'
-    ),
-    save_best_only=True
-)
+                              patience=3, min_lr=0.001)
 
 #TO early stopping
 early_stopping = EarlyStopping(monitor='val_loss',patience=3,verbose=0,mode='auto')

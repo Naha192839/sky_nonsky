@@ -68,7 +68,7 @@ test_generator = test_datagen.flow_from_directory(
 model = Sequential()
 model.add(Cropping2D(cropping=((0,112), (0,0)),input_shape=(img_height, img_width, 3)))
 model.add(ZeroPadding2D(padding=(3, 3)))
-model.add(Conv2D(32, (7, 7),strides=(2, 2),kernel_initializer='he_normal'))
+model.add(Conv2D(32, (7, 7),strides=(1, 2),kernel_initializer='he_normal'))
 model.add(Activation('relu'))
 model.add(ZeroPadding2D(padding=(1,1)))
 model.add(MaxPooling2D((3, 3),strides=(2, 2)))
@@ -117,7 +117,7 @@ history = model.fit(
   steps_per_epoch = nb_train_samples // train_batch_size,
   validation_data = validation_generator,
   validation_steps = nb_validation_samples // val_batch_size,
-  epochs=30,
+  epochs=40,
   callbacks=[early_stopping,reduce_lr]
 )
 # Evaluate the model on the test data using `evaluate`
@@ -144,4 +144,4 @@ plt.xlabel('Epoch')
 plt.legend(['Train', 'Val'], loc='upper left')
 plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
 
-# model.save('./model/cnn.h5')    
+model.save('./model/top_cnn.h5')    
