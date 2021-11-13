@@ -105,7 +105,7 @@ history = model.fit(
   steps_per_epoch = train_generator.n // train_batch_size,
   validation_data = validation_generator,
   validation_steps = validation_generator.n // val_batch_size,
-  epochs=40,
+  epochs=20,
   callbacks=[reduce_lr,early_stopping]
 )
 # Evaluate the model on the test data using `evaluate`
@@ -128,7 +128,7 @@ history = model.fit(
   steps_per_epoch = train_generator.n // train_batch_size,
   validation_data = validation_generator,
   validation_steps = validation_generator.n // val_batch_size,
-  epochs=40,
+  epochs=50,
   # callbacks=[checkpoint,early_stopping]
 )
 

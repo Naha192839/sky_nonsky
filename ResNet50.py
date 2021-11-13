@@ -80,7 +80,7 @@ predictions = Dense(nb_classes, activation='softmax')(x)
 model = Model(resnet50.input, predictions)
 
 model.compile(loss='binary_crossentropy',
-              optimizer=optimizers.SGD(lr=0.00002, momentum=0.9,decay=0.0002),
+              optimizer=optimizers.SGD(lr=0.0001 ,momentum=0.009,decay=0.0002),
               metrics=['accuracy'])
 model.summary()
 
@@ -98,8 +98,8 @@ history = model.fit(
   steps_per_epoch = train_generator.n // train_batch_size,
   validation_data = validation_generator,
   validation_steps = validation_generator.n // val_batch_size,
-  epochs=10,
-  callbacks=[reduce_lr]
+  epochs=30,
+  # callbacks=[reduce_lr]
 )
 
 
@@ -118,32 +118,32 @@ history = model.fit(
 #   steps_per_epoch = train_generator.n // train_batch_size,
 #   validation_data = validation_generator,
 #   validation_steps = validation_generator.n // val_batch_size,
-#   epochs=15,
-#   # callbacks=[checkpoint,early_stopping]
+#   epochs=30,
+#   callbacks=[reduce_lr]
 # )
 
-# # Evaluate the model on the test data using `evaluate`
-# print("Evaluate on test data")
-# results = model.evaluate(test_generator)
-# print("test loss, test acc:", results)
+# Evaluate the model on the test data using `evaluate`
+print("Evaluate on test data")
+results = model.evaluate(test_generator)
+print("test loss, test acc:", results)
 
-# # Plot training & validation accuracy values
-# plt.plot(history.history['accuracy'])
-# plt.plot(history.history['val_accuracy'])
-# plt.title('Model accuracy')
-# plt.ylabel('Accuracy')
-# plt.xlabel('Epoch')
-# plt.legend(['Train', 'Val'], loc='upper left')
-# plt.savefig(os.path.join("./fig/acc_fig/",str(datetime.datetime.today())+"acc.jpg"))
-# plt.clf()
+# Plot training & validation accuracy values
+plt.plot(history.history['accuracy'])
+plt.plot(history.history['val_accuracy'])
+plt.title('Model accuracy')
+plt.ylabel('Accuracy')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Val'], loc='upper left')
+plt.savefig(os.path.join("./fig/acc_fig/",str(datetime.datetime.today())+"acc.jpg"))
+plt.clf()
 
-# # Plot training & validation loss values
-# plt.plot(history.history['loss'])
-# plt.plot(history.history['val_loss'])
-# plt.title('Model loss')
-# plt.ylabel('Loss')
-# plt.xlabel('Epoch')
-# plt.legend(['Train', 'Val'], loc='upper left')
-# plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
+# Plot training & validation loss values
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Val'], loc='upper left')
+plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
 
-# model.save('./model/ResNet50.h5')    
+model.save('./model/ResNet50.h5')    

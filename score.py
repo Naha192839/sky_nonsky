@@ -19,7 +19,7 @@ test_data_dir = './dataset/test2'
 classes = ["空あり", "空なし"]
 image_size = 224
 num_classes = len(classes)
-model_name = "global_cnn"
+model_name = "vgg16"
 keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/"+str(model_name)+".h5"
 
 img_width, img_height = 224, 224
@@ -41,20 +41,18 @@ model = keras.models.load_model(keras_param)
 batch = test_generator.next()
 x, y_test = batch
 y_test=np.argmax(y_test,axis=1)
-print(y_test)
 
 p_test = model.predict(x) # 予測
 p_test = np.argmax(p_test,axis=1)
-print(p_test)
 
 
 df = pd.DataFrame({'正解値':y_test, '予測値':p_test})
 #誤分類を抽出
 df2 = df[df['正解値']!=df['予測値']]
 
-print(df)
+
 print("------------------------------------------------")
-print(df2)
+
 
 for t in range(len(classes)):
 
@@ -97,7 +95,6 @@ for t in range(len(classes)):
 
 plt.figure()
 cm = confusion_matrix(y_test, p_test,normalize='true')
-print(cm)
 df_cm = pd.DataFrame(cm, index=['sky', 'non-sky'], columns=['sky', 'non-sky'])
 
 print("適合率:"+str(precision_score(y_test, p_test,average=None)))

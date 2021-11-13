@@ -107,7 +107,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
 early_stopping = EarlyStopping(monitor='val_loss',patience=5,verbose=0,mode='auto')
 
 model.compile(loss='categorical_crossentropy',
-              optimizer=optimizers.SGD(lr=0.001, momentum=0.0009,decay=0.0002),
+              optimizer=optimizers.SGD(lr=0.001, momentum=0.9,decay=0.0002),
               metrics=['accuracy'])
 # steps_per_epoch: 1エポックを宣言してから次のエポックの開始前までにgeneratorから生成されるサンプル (サンプルのバッチ) の総数．
 # 典型的には，データにおけるユニークなサンプル数をバッチサイズで割った値です． 
@@ -117,7 +117,7 @@ history = model.fit(
   steps_per_epoch = nb_train_samples // train_batch_size,
   validation_data = validation_generator,
   validation_steps = nb_validation_samples // val_batch_size,
-  epochs=40,
+  epochs=50,
   callbacks=[early_stopping,reduce_lr]
 )
 # Evaluate the model on the test data using `evaluate`
