@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import models, layers
-from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications import ResNet50V2,ResNet50
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,GlobalAveragePooling2D
+from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,GlobalAveragePooling2D,AveragePooling2D
 from tensorflow.keras import optimizers,regularizers
 from tensorflow.keras.callbacks import ReduceLROnPlateau,EarlyStopping
 import os , datetime
@@ -21,7 +21,7 @@ nb_train_samples = 1400
 nb_validation_samples = 200
 img_width, img_height = 224, 224
 
-train_batch_size = 32
+train_batch_size = 64
 val_batch_size = 16
 
 # train用
@@ -67,20 +67,22 @@ test_generator = test_datagen.flow_from_directory(
 
 
 input_tensor = Input(shape=(img_height,img_width, 3))
-resnet50 = ResNet50(include_top=False, weights='imagenet',input_tensor=input_tensor)
+resnet50 = ResNet50V2(include_top=False, weights='imagenet',input_tensor=input_tensor,pooling='avg')
+
+# 重みパラメータの凍結
 resnet50.trainable = False
 
 x=resnet50.output
-x = GlobalAveragePooling2D()(x)
+# x = GlobalAveragePooling2D()(x)
 # let's add a fully-connected layer
-x = Dense(1024, activation='relu')(x)
+# x = Dense(1024, activation='relu')(x)
 # and a logistic layer -- let's say we have 200 classes
 predictions = Dense(nb_classes, activation='softmax')(x)
 
 model = Model(resnet50.input, predictions)
 
-model.compile(loss='binary_crossentropy',
-              optimizer=optimizers.SGD(lr=0.0001 ,momentum=0.009,decay=0.0002),
+model.compile(loss='categorical_crossentropy',
+              optimizer=optimizers.SGD(lr=0.001 ,momentum=0.9,decay=0.0002),
               metrics=['accuracy'])
 model.summary()
 
@@ -88,7 +90,7 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
                               patience=3, min_lr=0.001)
 
 #TO early stopping
-early_stopping = EarlyStopping(monitor='val_loss',patience=3,verbose=0,mode='auto')
+early_stopping = EarlyStopping(monitor='val_loss',patience=5,verbose=0,mode='auto')
 
 # steps_per_epoch: 1エポックを宣言してから次のエポックの開始前までにgeneratorから生成されるサンプル (サンプルのバッチ) の総数．
 # 典型的には，データにおけるユニークなサンプル数をバッチサイズで割った値です． 
@@ -98,29 +100,29 @@ history = model.fit(
   steps_per_epoch = train_generator.n // train_batch_size,
   validation_data = validation_generator,
   validation_steps = validation_generator.n // val_batch_size,
-  epochs=30,
-  # callbacks=[reduce_lr]
+  epochs=50,
+  callbacks=[early_stopping]
 )
 
+# block5の重みパラメーターを解凍
+for layer in model.layers[:154]:
+   layer.trainable = False
+for layer in model.layers[154:]:
+   layer.trainable = True
 
-# for layer in model.layers[:100]:
-#    layer.trainable = False
-# for layer in model.layers[100:]:
-#    layer.trainable = True
+model.compile(loss='binary_crossentropy',
+              optimizer=optimizers.SGD(lr=0.001, momentum=0.9,decay=0.0002),
+              metrics=['accuracy'])
+model.summary()
 
-# model.compile(loss='binary_crossentropy',
-#               optimizer=optimizers.SGD(lr=0.0005, momentum=0.9,decay=0.0002),
-#               metrics=['accuracy'])
-# model.summary()
-
-# history = model.fit(
-#   train_generator, 
-#   steps_per_epoch = train_generator.n // train_batch_size,
-#   validation_data = validation_generator,
-#   validation_steps = validation_generator.n // val_batch_size,
-#   epochs=30,
-#   callbacks=[reduce_lr]
-# )
+history = model.fit(
+  train_generator, 
+  steps_per_epoch = train_generator.n // train_batch_size,
+  validation_data = validation_generator,
+  validation_steps = validation_generator.n // val_batch_size,
+  epochs=30,
+  callbacks=[early_stopping]
+)
 
 # Evaluate the model on the test data using `evaluate`
 print("Evaluate on test data")
