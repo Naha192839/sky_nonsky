@@ -100,9 +100,16 @@ history = model.fit(
   steps_per_epoch = train_generator.n // train_batch_size,
   validation_data = validation_generator,
   validation_steps = validation_generator.n // val_batch_size,
-  epochs=50,
-  callbacks=[early_stopping]
+  epochs=30,
+  callbacks=[reduce_lr,early_stopping]
 )
+# Evaluate the model on the test data using `evaluate`
+print("Evaluate on test data")
+results = model.evaluate_generator(
+  test_generator,
+  steps=test_generator.n // val_batch_size)
+print("test loss, test acc:", results)
+
 
 # block5の重みパラメーターを解凍
 for layer in model.layers[:154]:
@@ -121,12 +128,14 @@ history = model.fit(
   validation_data = validation_generator,
   validation_steps = validation_generator.n // val_batch_size,
   epochs=30,
-  callbacks=[early_stopping]
+  callbacks=[reduce_lr,early_stopping]
 )
 
 # Evaluate the model on the test data using `evaluate`
 print("Evaluate on test data")
-results = model.evaluate(test_generator)
+results = model.evaluate_generator(
+  test_generator,
+  steps=test_generator.n // val_batch_size)
 print("test loss, test acc:", results)
 
 # Plot training & validation accuracy values
