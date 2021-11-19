@@ -16,14 +16,14 @@ from keras.models import load_model
 from tensorflow.keras import models
 
 test_data_dir = './dataset/test2'
-testpic = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/FILE210928-071156-M 4.jpg" 
+testpic = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/b1e9ee0e-67e26f2e.jpg" 
 classes = ["空あり", "空なし"]
 image_size = 224
 num_classes = len(classes)
-model_name = "vgg16"
-keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/"+str(model_name)+".h5"
+model_name = "top_cnn"
+keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/top_cnn_nopadding.h5"
 
-types = ['jpg','JPG']
+types = ['jpg']
 files = []
 
 img_width, img_height = 224, 224
@@ -31,10 +31,7 @@ img_width, img_height = 224, 224
 def load_image(path,model):
     img = PIL.Image.open(path)
     img = img.convert('RGB')
-    print(img.size)
     h, w= img.size
-    print(h)
-    print(w)
     if model == "top_cnn":
         img = img.crop((0, 0, h, w/2))
         print(img)
@@ -102,6 +99,10 @@ def grad_cam(input_model, x, tri_x,layer_name):
     return output_image
 
 model = keras.models.load_model(keras_param)
+if model_name == "vgg16":
+    target_layer = "block5_conv3"
+else :
+    target_layer = 'conv2d_4'
 
 #-----------------------------------------------------
 img = img_to_array(load_img(testpic, target_size=(image_size,image_size)))
@@ -112,21 +113,18 @@ prd = model.predict(np.array([img / 255.0]))
 print(prd) # 精度の表示
 prelabel = np.argmax(prd, axis=1)
 
-target_layer = 'block5_conv3'
 cam = grad_cam(model, img, img_trimmig, target_layer)
 save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
 
 
 
-# if prelabel == 0:
-#     print(">>> 空あり")
-# elif prelabel == 1:
-#     print(">>> 空なし")
+if prelabel == 0:
+    print(">>> 空あり")
+elif prelabel == 1:
+    print(">>> 空なし")
 # ----------------------------------------------------------------------------------
 
-# target_layer = 'conv2d_4'
-
-# # 空あり画像のチェック
+# 空あり画像のチェック
 # photos_dir = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/dataset/test2/空あり" 
 # for ext in types:
 #   file_path = os.path.join(photos_dir, '*.{}'.format(ext))
@@ -147,19 +145,19 @@ save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/gradcam_"+str(datet
 #         save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
         
 #     if prelabel == 1:
-#         save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空なし→空あり/gradcam_"+str(datetime.datetime.today())+"-"+os.path.basename(i)),img)
+#         save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり→空なし/gradcam_"+str(datetime.datetime.today())+"-"+os.path.basename(i)),img)
 #         cam = grad_cam(model, img, img_trimmig,target_layer)
-#         save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空なし→空あり/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
-
+#         save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり→空なし/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
+# files = []
 # # 空なし画像のチェック
 # photos_dir = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/dataset/test2/空なし" 
 # for ext in types:
 #   file_path = os.path.join(photos_dir, '*.{}'.format(ext))
 #   files.extend(glob.glob(file_path))
 # for i in files:
-#     img = img_to_array(load_img(testpic, target_size=(image_size,image_size)))
+#     img = img_to_array(load_img(i, target_size=(image_size,image_size)))
 #     # トリンミグ画像の読み込み
-#     img_trimmig = img_to_array(load_image(testpic,model_name))
+#     img_trimmig = img_to_array(load_image(i,model_name))
 
 #     prd = model.predict(np.array([img / 255.0]))
 #     print(prd) # 精度の表示

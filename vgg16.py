@@ -72,7 +72,7 @@ vgg16.trainable = False
 x=vgg16.output
 x = GlobalAveragePooling2D()(x)
 # let's add a fully-connected layer
-x = Dense(1024, activation='relu')(x)
+# x = Dense(1024, activation='relu')(x)
 # and a logistic layer -- let's say we have 200 classes
 predictions = Dense(nb_classes, activation='softmax')(x)
 
@@ -105,55 +105,55 @@ history = model.fit(
   steps_per_epoch = train_generator.n // train_batch_size,
   validation_data = validation_generator,
   validation_steps = validation_generator.n // val_batch_size,
-  epochs=20,
+  epochs=5,
   callbacks=[reduce_lr,early_stopping]
 )
-# Evaluate the model on the test data using `evaluate`
-print("Evaluate on test data")
-results = model.evaluate(test_generator)
-print("test loss, test acc:", results)
+# # Evaluate the model on the test data using `evaluate`
+# print("Evaluate on test data")
+# results = model.evaluate(test_generator)
+# print("test loss, test acc:", results)
 
-for layer in model.layers[:15]:
-   layer.trainable = False
-for layer in model.layers[15:]:
-   layer.trainable = True
+# for layer in model.layers[:15]:
+#    layer.trainable = False
+# for layer in model.layers[15:]:
+#    layer.trainable = True
 
-model.compile(loss='categorical_crossentropy',
-              optimizer=optimizers.SGD(lr=0.001, momentum=0.9,decay=0.0002),
-              metrics=['accuracy'])
-model.summary()
+# model.compile(loss='categorical_crossentropy',
+#               optimizer=optimizers.SGD(lr=0.001, momentum=0.9,decay=0.0002),
+#               metrics=['accuracy'])
+# model.summary()
 
-history = model.fit(
-  train_generator, 
-  steps_per_epoch = train_generator.n // train_batch_size,
-  validation_data = validation_generator,
-  validation_steps = validation_generator.n // val_batch_size,
-  epochs=50,
-  # callbacks=[checkpoint,early_stopping]
-)
+# history = model.fit(
+#   train_generator, 
+#   steps_per_epoch = train_generator.n // train_batch_size,
+#   validation_data = validation_generator,
+#   validation_steps = validation_generator.n // val_batch_size,
+#   epochs=50,
+#   # callbacks=[checkpoint,early_stopping]
+# )
 
-# Evaluate the model on the test data using `evaluate`
-print("Evaluate on test data")
-results = model.evaluate(test_generator)
-print("test loss, test acc:", results)
+# # Evaluate the model on the test data using `evaluate`
+# print("Evaluate on test data")
+# results = model.evaluate(test_generator)
+# print("test loss, test acc:", results)
 
-# Plot training & validation accuracy values
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
-plt.title('Model accuracy')
-plt.ylabel('Accuracy')
-plt.xlabel('Epoch')
-plt.legend(['Train', 'Val'], loc='upper left')
-plt.savefig(os.path.join("./fig/acc_fig/",str(datetime.datetime.today())+"acc.jpg"))
-plt.clf()
+# # Plot training & validation accuracy values
+# plt.plot(history.history['accuracy'])
+# plt.plot(history.history['val_accuracy'])
+# plt.title('Model accuracy')
+# plt.ylabel('Accuracy')
+# plt.xlabel('Epoch')
+# plt.legend(['Train', 'Val'], loc='upper left')
+# plt.savefig(os.path.join("./fig/acc_fig/",str(datetime.datetime.today())+"acc.jpg"))
+# plt.clf()
 
-# Plot training & validation loss values
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('Model loss')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.legend(['Train', 'Val'], loc='upper left')
-plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
+# # Plot training & validation loss values
+# plt.plot(history.history['loss'])
+# plt.plot(history.history['val_loss'])
+# plt.title('Model loss')
+# plt.ylabel('Loss')
+# plt.xlabel('Epoch')
+# plt.legend(['Train', 'Val'], loc='upper left')
+# plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
 
-model.save('./model/vgg16.h5')    
+# model.save('./model/vgg16.h5')    

@@ -68,13 +68,12 @@ test_generator = test_datagen.flow_from_directory(
 model = Sequential()
 model.add(Cropping2D(cropping=((0,112), (0,0)),input_shape=(img_height, img_width, 3)))
 model.add(ZeroPadding2D(padding=(3, 3)))
-model.add(Conv2D(32, (7, 7),strides=(1, 2),kernel_initializer='he_normal'))
+model.add(Conv2D(32, (7, 7),strides=(1, 2)))
 model.add(Activation('relu'))
 model.add(ZeroPadding2D(padding=(1,1)))
 model.add(MaxPooling2D((3, 3),strides=(2, 2)))
 
-model.add(ZeroPadding2D(padding=(1,1)))
-model.add(Conv2D(128, (3, 3),activation='relu'))
+model.add(Conv2D(128, (3, 3),padding='same',activation='relu'))
 
 model.add(ZeroPadding2D(padding=(1,1)))
 model.add(Conv2D(256,(3, 3),strides=(2, 2), activation='relu'))
@@ -144,4 +143,4 @@ plt.xlabel('Epoch')
 plt.legend(['Train', 'Val'], loc='upper left')
 plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
 
-model.save('./model/top_cnn.h5')    
+model.save('./model/top_cnn_nopadding.h5')    
