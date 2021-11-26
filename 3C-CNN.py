@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import models, layers,optimizers,regularizers
-from tensorflow.keras.applications import VGG16,ResNet50
+from tensorflow.keras.applications import VGG16,ResNet50V2
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,GlobalAveragePooling2D,AveragePooling2D,Cropping2D,ZeroPadding2D,Conv2D,MaxPooling2D,concatenate
 from tensorflow.keras.utils import plot_model
@@ -18,6 +18,8 @@ model_dir = "./model"
 
 nb_train_samples = 1400
 nb_validation_samples = 200
+nb_test_samples = 400
+
 img_width, img_height = 224, 224
 
 train_batch_size = 64
@@ -36,75 +38,123 @@ val_datagen = ImageDataGenerator(rescale=1. / 255)
 # test 用
 test_datagen = ImageDataGenerator(rescale=1. / 255)
 
-train_generator = train_datagen.flow_from_directory(
-  train_data_dir,
-  target_size=(img_height, img_width),
-  color_mode='rgb',
-  classes=classes,
-  class_mode='categorical',
-  batch_size= train_batch_size,# 1回のバッチ生成で作る画像数
-  shuffle=True,
-  )
+# train_generator = train_datagen.flow_from_directory(
+#   train_data_dir,
+#   target_size=(img_height, img_width),
+#   color_mode='rgb',
+#   classes=classes,
+#   class_mode='categorical',
+#   batch_size= train_batch_size,# 1回のバッチ生成で作る画像数
+#   shuffle=True,
+#   )
  
-validation_generator = val_datagen.flow_from_directory(
-  validation_data_dir,
-  target_size=(img_height,img_width),
-  color_mode='rgb',
-  classes=classes,
-  class_mode='categorical',
-  batch_size=val_batch_size,# 1回のバッチ生成で作る画像数
-  )
+# validation_generator = val_datagen.flow_from_directory(
+#   validation_data_dir,
+#   target_size=(img_height,img_width),
+#   color_mode='rgb',
+#   classes=classes,
+#   class_mode='categorical',
+#   batch_size=val_batch_size,# 1回のバッチ生成で作る画像数
+#   )
 
-test_generator = test_datagen.flow_from_directory(
-  test_data_dir,
-  target_size=(img_height,img_width),
-  color_mode='rgb',
-  classes=classes,
-  class_mode='categorical',
-  batch_size=val_batch_size # 1回のバッチ生成で作る画像数
-  )
+# test_generator = test_datagen.flow_from_directory(
+#   test_data_dir,
+#   target_size=(img_height,img_width),
+#   color_mode='rgb',
+#   classes=classes,
+#   class_mode='categorical',
+#   batch_size=val_batch_size # 1回のバッチ生成で作る画像数
+#   )
 
-
-def generate_generator_multiple(generator,dir1, dir2, batch_size, img_height,img_width):
+def three_generator_multiple(generator,dir1, dir2,dir3, batch_size, img_height,img_width):
     genX1 = generator.flow_from_directory(dir1,
                                           target_size = (img_height,img_width),
                                           color_mode='rgb',
                                           class_mode = 'categorical',
                                           classes=classes,
                                           batch_size = batch_size,
-                                          shuffle=True, 
-                                          seed=7)
+                                          )
     genX2 = generator.flow_from_directory(dir2,
                                           target_size = (img_height,img_width),
                                           color_mode='rgb',
                                           class_mode = 'categorical',
                                           classes=classes,
                                           batch_size = batch_size,
-                                          shuffle=True, 
-                                          seed=7)
+                                          )
+    genX3 = generator.flow_from_directory(dir3,
+                                          target_size = (img_height,img_width),
+                                          color_mode='rgb',
+                                          class_mode = 'categorical',
+                                          classes=classes,
+                                          batch_size = batch_size,
+                                          )                                          
     while True:
             X1i = genX1.next()
             X2i = genX2.next()
-            yield [X1i[0], X2i[0]], X2i[1]  #Yield both images and their mutual label
-            
-            
-multi_train_generator=generate_generator_multiple(train_datagen,
+            X3i = genX3.next()
+            yield [X1i[0], X2i[0],X3i[0]], X3i[1]  #Yield both images and their mutual label
+three_train_generator=three_generator_multiple(train_datagen,
                                            dir1=train_data_dir,
                                            dir2=train_data_dir,
+                                           dir3=train_data_dir,
                                            batch_size=train_batch_size,
                                            img_height=img_height,
                                            img_width=img_height)       
      
-multi_validation_generator=generate_generator_multiple(val_datagen,
+three_validation_generator=three_generator_multiple(val_datagen,
                                           dir1=validation_data_dir,
                                           dir2=validation_data_dir,
+                                          dir3=validation_data_dir,
                                           batch_size=val_batch_size,
                                           img_height=img_height,
                                           img_width=img_height)          
 
-multi_test_generator=generate_generator_multiple(test_datagen,
+three_test_generator=three_generator_multiple(test_datagen,
                                           dir1=test_data_dir,
                                           dir2=test_data_dir,
+                                          dir3=test_data_dir,
+                                          batch_size=val_batch_size,
+                                          img_height=img_height,
+                                          img_width=img_height)
+# 2入力用
+def two_generator_multiple(generator,dir1, dir2,batch_size, img_height,img_width):
+    genX1 = generator.flow_from_directory(dir1,
+                                          target_size = (img_height,img_width),
+                                          color_mode='rgb',
+                                          class_mode = 'categorical',
+                                          classes=classes,
+                                          batch_size = batch_size,
+                                          )
+    genX2 = generator.flow_from_directory(dir2,
+                                          target_size = (img_height,img_width),
+                                          color_mode='rgb',
+                                          class_mode = 'categorical',
+                                          classes=classes,
+                                          batch_size = batch_size,
+                                          )                                      
+    while True:
+            X1i = genX1.next()
+            X2i = genX2.next()    
+            yield [X1i[0], X2i[0]], X2i[1]  #Yield both images and their mutual label
+            
+            
+two_train_generator=two_generator_multiple(train_datagen,
+                                           dir1=train_data_dir,
+                                           dir2=train_data_dir,                                    
+                                           batch_size=train_batch_size,
+                                           img_height=img_height,
+                                           img_width=img_height)       
+     
+two_validation_generator=two_generator_multiple(val_datagen,
+                                          dir1=validation_data_dir,
+                                          dir2=validation_data_dir,                                          
+                                          batch_size=val_batch_size,
+                                          img_height=img_height,
+                                          img_width=img_height)          
+
+two_test_generator=two_generator_multiple(test_datagen,
+                                          dir1=test_data_dir,
+                                          dir2=test_data_dir,                                          
                                           batch_size=val_batch_size,
                                           img_height=img_height,
                                           img_width=img_height)
@@ -114,15 +164,13 @@ top_input_tensor = Input(shape=(img_height,img_width,3))
 bottom_input_tensor = Input(shape=(img_height,img_width,3))
 
 # ----------------------------------------------------
-vgg16 = VGG16(include_top=False, weights='imagenet',input_tensor=global_input_tensor)
-vgg16.trainable = False
-
-for layer in vgg16.layers[:15]:
+resnet50 = ResNet50V2(include_top=False, weights='imagenet',input_tensor=global_input_tensor)
+resnet50.trainable = False
+# block5の重みパラメーターを解凍
+for layer in resnet50.layers[:154]:
    layer.trainable = False
-for layer in vgg16.layers[15:]:
+for layer in resnet50.layers[154:]:
    layer.trainable = True
-# resnet50 = ResNet50(include_top=False, weights='imagenet',input_tensor=global_input_tensor)
-# resnet50.trainable = False
 
 # x=vgg16.output
 # x = GlobalAveragePooling2D()(x)
@@ -130,8 +178,8 @@ for layer in vgg16.layers[15:]:
 # x = Dense(1024, activation='relu')(x)
 # # and a logistic layer -- let's say we have 200 classes
 # predictions = Dense(nb_classes, activation='softmax')(x)
-global_model = Model(global_input_tensor, vgg16.output)
-# global_model = Model(resnet50.input, resnet50.output)
+global_model = Model(global_input_tensor, resnet50.output)
+
 
 # 上領域---------------------------------------------------
 top_model = Cropping2D(cropping=((0,112), (0,0)))(top_input_tensor)
@@ -174,38 +222,70 @@ bottom_model = Conv2D(1024,(3, 3),strides=(2, 2), activation='relu')(bottom_mode
 bottom_model = Model(bottom_input_tensor,bottom_model)
 
 # -----------------------------------------------------
+# ここを変えるときはモデル名も変更していください
 input_model1 = top_model
-input_model2 = bottom_model
+input_model2 = global_model
+input_model3 = 0
+ 
+if input_model3 == 0:
+  model = concatenate([input_model1.output,input_model2.output])
+else:
+  model = concatenate([input_model1.output,input_model2.output,input_model3.output])
 
-model = concatenate([input_model1.output,input_model2.output],axis=3)
-model = AveragePooling2D((7,7))(model)
-model = Flatten()(model)
-model = Dense(256)(model)
+model = GlobalAveragePooling2D()(model)
 prediction = Dense(nb_classes, activation='softmax')(model)
 
-model = Model([input_model1.input,input_model2.input],prediction)
+if input_model3 == 0:
+  model = Model([input_model1.input,input_model2.input],prediction)
+else:  
+  model = Model([input_model1.input,input_model2.input,input_model3.input],prediction)
+
 model.compile(loss='categorical_crossentropy',
               optimizer=optimizers.SGD(lr=0.001, momentum=0.9,decay=0.0002),
               metrics=['accuracy'])
 model.summary()
 
+reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2,
+                              patience=3, min_lr=0.001)
+
 plot_model(model, show_shapes=True,show_layer_names=False,to_file='model.png')
 
-history = model.fit_generator(
-  multi_train_generator, 
-  steps_per_epoch = train_generator.n // train_batch_size,
-  validation_data = multi_validation_generator,
-  validation_steps = validation_generator.n // val_batch_size,
-  epochs=5,
-#   callbacks=[early_stopping,reduce_lr]
-)
 
-# Evaluate the model on the test data using `evaluate`
-print("Evaluate on test data")
-results = model.evaluate_generator(
-  multi_test_generator,
-  steps=test_generator.n // val_batch_size)
-print("test loss, test acc:", results)
+# 2入力用
+if input_model3 == 0:
+  history = model.fit(
+    two_train_generator, 
+    steps_per_epoch = nb_train_samples // train_batch_size, #こいつのためにtrain_generatorを残している
+    validation_data = two_validation_generator,
+    validation_steps = nb_validation_samples // val_batch_size,
+    epochs=50,
+    # callbacks=[reduce_lr]
+  )
+
+  # Evaluate the model on the test data using `evaluate`
+  print("Evaluate on test data")
+  results = model.evaluate(
+    two_test_generator,
+    steps= nb_test_samples // val_batch_size)
+  print("test loss, test acc:", results)
+
+# 3入力用
+else:
+  history = model.fit(
+    three_train_generator, 
+    steps_per_epoch = nb_train_samples // train_batch_size, #こいつのためにtrain_generatorを残している
+    validation_data = three_validation_generator,
+    validation_steps = nb_validation_samples // val_batch_size,
+    epochs=50,
+    # callbacks=[reduce_lr]
+  )
+
+  # Evaluate the model on the test data using `evaluate`
+  print("Evaluate on test data")
+  results = model.evaluate(
+    three_test_generator,
+    steps=nb_test_samples // val_batch_size)
+  print("test loss, test acc:", results)
 
 # Plot training & validation accuracy values
 plt.plot(history.history['accuracy'])
@@ -226,4 +306,4 @@ plt.xlabel('Epoch')
 plt.legend(['Train', 'Val'], loc='upper left')
 plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
 
-model.save('./model/3C-CNN.h5')    
+model.save('./model/global_top.h5')    
