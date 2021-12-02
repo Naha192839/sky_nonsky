@@ -185,50 +185,60 @@ for layer in global_model.layers[154:]:
 global_model = Model(global_input_tensor, global_model.output,name="global_model")
 
 # 上領域---------------------------------------------------
-top_model = Cropping2D(cropping=((0,112), (0,0)))(top_input_tensor)
+top_model = Cropping2D(cropping=((0, 112), (0, 0)))(top_input_tensor)
 top_model = ZeroPadding2D(padding=(3, 3))(top_model)
-top_model = Conv2D(32, (7, 7),strides=(1, 2),activation='relu')(top_model)
-top_model = ZeroPadding2D(padding=(1,1))(top_model)
-top_model = MaxPooling2D((3, 3),strides=(2, 2))(top_model)
-
-top_model =Conv2D(128, (3, 3),padding='same',activation='relu')(top_model)
-
-top_model = ZeroPadding2D(padding=(1,1))(top_model)
-top_model = Conv2D(256,(3, 3),strides=(2, 2), activation='relu')(top_model)
+top_model = Conv2D(32, (7, 7), strides=(
+    1, 2), activation='relu')(top_model)
+top_model = ZeroPadding2D(padding=(1, 1))(top_model)
+top_model = MaxPooling2D((3, 3), strides=(2, 2))(top_model)
 
 top_model = ZeroPadding2D(padding=(1,1))(top_model)
-top_model = Conv2D(512,(3, 3),strides=(2, 2), activation='relu')(top_model)
+top_model = Conv2D(128, (3, 3), strides=(
+    2, 2),activation='relu')(top_model)
 
-top_model = ZeroPadding2D(padding=(1,1))(top_model)
-top_model = Conv2D(1024,(3, 3),strides=(2, 2), activation='relu')(top_model)
-top_model = Model(top_input_tensor,top_model,name = "top_model")
+top_model = ZeroPadding2D(padding=(1, 1))(top_model)
+top_model = Conv2D(256, (3, 3), strides=(
+    2, 2), activation='relu')(top_model)
+
+top_model = ZeroPadding2D(padding=(1, 1))(top_model)
+top_model = Conv2D(512, (3, 3), strides=(
+    2, 2), activation='relu')(top_model)
+
+top_model = Conv2D(1024, (3, 3),padding="same",
+                    activation='relu')(top_model)
+top_model = Model(top_input_tensor, top_model, name="top_model")
 
 # -----------------------------------------------------
 
-#下領域 ---------------------------------------------------
-bottom_model = Cropping2D(cropping=((112,0), (0,0)))(bottom_input_tensor)
+# 下領域 ---------------------------------------------------
+bottom_model = Cropping2D(cropping=((112, 0), (0, 0)))(bottom_input_tensor)
 bottom_model = ZeroPadding2D(padding=(3, 3))(bottom_model)
-bottom_model = Conv2D(32, (7, 7),strides=(1, 2),activation='relu')(bottom_model)
-bottom_model = ZeroPadding2D(padding=(1,1))(bottom_model)
-bottom_model = MaxPooling2D((3, 3),strides=(2, 2))(bottom_model)
-
-bottom_model =Conv2D(128, (3, 3),padding='same',activation='relu')(bottom_model)
-
-bottom_model = ZeroPadding2D(padding=(1,1))(bottom_model)
-bottom_model = Conv2D(256,(3, 3),strides=(2, 2), activation='relu')(bottom_model)
+bottom_model = Conv2D(32, (7, 7), strides=(
+    1, 2), activation='relu')(bottom_model)
+bottom_model = ZeroPadding2D(padding=(1, 1))(bottom_model)
+bottom_model = MaxPooling2D((3, 3), strides=(2, 2))(bottom_model)
 
 bottom_model = ZeroPadding2D(padding=(1,1))(bottom_model)
-bottom_model = Conv2D(512,(3, 3),strides=(2, 2), activation='relu')(bottom_model)
+bottom_model = Conv2D(128, (3, 3),strides=(2,2),
+                      activation='relu')(bottom_model)
 
-bottom_model = ZeroPadding2D(padding=(1,1))(bottom_model)
-bottom_model = Conv2D(1024,(3, 3),strides=(2, 2), activation='relu')(bottom_model)
-bottom_model = Model(bottom_input_tensor,bottom_model,name = "bottom_model")
+bottom_model = ZeroPadding2D(padding=(1, 1))(bottom_model)
+bottom_model = Conv2D(256, (3, 3), strides=(
+    2, 2), activation='relu')(bottom_model)
 
+bottom_model = ZeroPadding2D(padding=(1, 1))(bottom_model)
+bottom_model = Conv2D(512, (3, 3), strides=(
+    2, 2), activation='relu')(bottom_model)
+
+
+bottom_model = Conv2D(1024, (3, 3),padding="same", activation='relu')(bottom_model)
+bottom_model = Model(bottom_input_tensor,
+                      bottom_model, name="bottom_model")
 # -----------------------------------------------------
 # ここを変えるときはモデル名も変更していください
 input_model1 = global_model
-input_model2 = bottom_model
-input_model3 = top_model
+input_model2 = top_model
+input_model3 = bottom_model
 
 if input_model3 == 0:
   model = concatenate([input_model1.output,input_model2.output])
@@ -253,59 +263,59 @@ reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.5,
 
 plot_model(model, show_shapes=True,show_layer_names=False,to_file='model.png')
 
-# 2入力用
-if input_model3 == 0:
-  history = model.fit(
-    two_train_generator, 
-    steps_per_epoch = nb_train_samples // train_batch_size, #こいつのためにtrain_generatorを残している
-    validation_data = two_validation_generator,
-    validation_steps = nb_validation_samples // val_batch_size,
-    epochs=30,
-    # callbacks=[reduce_lr]
-  )
+# # 2入力用
+# if input_model3 == 0:
+#   history = model.fit(
+#     two_train_generator, 
+#     steps_per_epoch = nb_train_samples // train_batch_size, #こいつのためにtrain_generatorを残している
+#     validation_data = two_validation_generator,
+#     validation_steps = nb_validation_samples // val_batch_size,
+#     epochs=30,
+#     # callbacks=[reduce_lr]
+#   )
 
-  # Evaluate the model on the test data using `evaluate`
-  print("Evaluate on test data")
-  results = model.evaluate(
-    two_test_generator,
-    steps= nb_test_samples // val_batch_size)
-  print("test loss, test acc:", results)
+#   # Evaluate the model on the test data using `evaluate`
+#   print("Evaluate on test data")
+#   results = model.evaluate(
+#     two_test_generator,
+#     steps= nb_test_samples // val_batch_size)
+#   print("test loss, test acc:", results)
 
-# 3入力用
-else:
-  history = model.fit(
-    three_train_generator, 
-    steps_per_epoch = nb_train_samples // train_batch_size, #こいつのためにtrain_generatorを残している
-    validation_data = three_validation_generator,
-    validation_steps = nb_validation_samples // val_batch_size,
-    epochs=30,
-    # callbacks=[reduce_lr]
-  )
+# # 3入力用
+# else:
+#   history = model.fit(
+#     three_train_generator, 
+#     steps_per_epoch = nb_train_samples // train_batch_size, #こいつのためにtrain_generatorを残している
+#     validation_data = three_validation_generator,
+#     validation_steps = nb_validation_samples // val_batch_size,
+#     epochs=30,
+#     # callbacks=[reduce_lr]
+#   )
 
-  # Evaluate the model on the test data using `evaluate`
-  print("Evaluate on test data")
-  results = model.evaluate(
-    three_test_generator,
-    steps=nb_test_samples // val_batch_size)
-  print("test loss, test acc:", results)
+#   # Evaluate the model on the test data using `evaluate`
+#   print("Evaluate on test data")
+#   results = model.evaluate(
+#     three_test_generator,
+#     steps=nb_test_samples // val_batch_size)
+#   print("test loss, test acc:", results)
 
-# Plot training & validation accuracy values
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
-plt.title('Model accuracy')
-plt.ylabel('Accuracy')
-plt.xlabel('Epoch')
-plt.legend(['Train', 'Val'], loc='upper left')
-plt.savefig(os.path.join("./fig/acc_fig/",str(datetime.datetime.today())+"acc.jpg"))
-plt.clf()
+# # Plot training & validation accuracy values
+# plt.plot(history.history['accuracy'])
+# plt.plot(history.history['val_accuracy'])
+# plt.title('Model accuracy')
+# plt.ylabel('Accuracy')
+# plt.xlabel('Epoch')
+# plt.legend(['Train', 'Val'], loc='upper left')
+# plt.savefig(os.path.join("./fig/acc_fig/",str(datetime.datetime.today())+"acc.jpg"))
+# plt.clf()
 
-# Plot training & validation loss values
-plt.plot(history.history['loss'])
-plt.plot(history.history['val_loss'])
-plt.title('Model loss')
-plt.ylabel('Loss')
-plt.xlabel('Epoch')
-plt.legend(['Train', 'Val'], loc='upper left')
-plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
+# # Plot training & validation loss values
+# plt.plot(history.history['loss'])
+# plt.plot(history.history['val_loss'])
+# plt.title('Model loss')
+# plt.ylabel('Loss')
+# plt.xlabel('Epoch')
+# plt.legend(['Train', 'Val'], loc='upper left')
+# plt.savefig(os.path.join("./fig/loss_fig/",str(datetime.datetime.today())+"loss.jpg"))
 
-model.save('./model/3C-CNN.h5')    
+# model.save('./model/global_top.h5')    

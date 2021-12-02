@@ -3,7 +3,7 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import models, layers
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,Conv2D,MaxPooling2D,ZeroPadding2D,BatchNormalization,Activation,Cropping2D
+from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,Conv2D,MaxPooling2D,ZeroPadding2D,GlobalAveragePooling2D,Activation,Cropping2D
 from tensorflow.keras import optimizers,regularizers
 from tensorflow.keras.callbacks import ReduceLROnPlateau,EarlyStopping, ModelCheckpoint
 import os , datetime
@@ -68,12 +68,13 @@ test_generator = test_datagen.flow_from_directory(
 model = Sequential()
 model.add(Cropping2D(cropping=((112,0), (0,0)),input_shape=(img_height, img_width, 3)))
 model.add(ZeroPadding2D(padding=(3, 3)))
-model.add(Conv2D(32, (7, 7),strides=(1, 2),kernel_initializer='he_normal'))
+model.add(Conv2D(32, (7, 7),strides=(1, 2)))
 model.add(Activation('relu'))
 model.add(ZeroPadding2D(padding=(1,1)))
 model.add(MaxPooling2D((3, 3),strides=(2, 2)))
 
-model.add(Conv2D(128, (3, 3),activation='relu',padding="same"))
+model.add(ZeroPadding2D(padding=(1,1)))
+model.add(Conv2D(128, (3, 3),strides=(2, 2),activation='relu'))
 
 model.add(ZeroPadding2D(padding=(1,1)))
 model.add(Conv2D(256,(3, 3),strides=(2, 2), activation='relu'))
@@ -81,12 +82,12 @@ model.add(Conv2D(256,(3, 3),strides=(2, 2), activation='relu'))
 model.add(ZeroPadding2D(padding=(1,1)))
 model.add(Conv2D(512, (3, 3),strides=(2, 2), activation='relu'))
 
-model.add(ZeroPadding2D(padding=(1,1)))
-model.add(Conv2D(1024, (3, 3),strides=(2, 2), activation='relu'))
 
-model.add(AveragePooling2D((1,1)))
-model.add(Flatten())
-model.add(Dense(256, activation='relu'))
+model.add(Conv2D(1024,(3, 3),padding='same',activation='relu'))
+
+model.add(GlobalAveragePooling2D())
+# model.add(Flatten())
+# model.add(Dense(256, activation='relu'))
 model.add(Dense(nb_classes, activation='softmax'))
 model.summary()
 
