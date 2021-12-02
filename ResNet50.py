@@ -6,6 +6,7 @@ from tensorflow.keras.applications import ResNet50V2,ResNet50
 from tensorflow.keras.models import Sequential, Model
 from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,GlobalAveragePooling2D,AveragePooling2D
 from tensorflow.keras import optimizers,regularizers
+from tensorflow.keras.utils import plot_model
 from tensorflow.keras.callbacks import ReduceLROnPlateau,EarlyStopping
 import os , datetime
 
@@ -67,7 +68,7 @@ test_generator = test_datagen.flow_from_directory(
 
 
 input_tensor = Input(shape=(img_height,img_width, 3))
-resnet50 = ResNet50V2(include_top=False, weights='imagenet',input_tensor=input_tensor,pooling='avg')
+resnet50 = ResNet50(include_top=False, weights='imagenet',input_tensor=input_tensor,pooling='avg')
 
 # 重みパラメータの凍結
 resnet50.trainable = False
@@ -117,13 +118,14 @@ model.compile(loss='categorical_crossentropy',
               optimizer=optimizers.SGD(lr=0.001, momentum=0.9,decay=0.0002),
               metrics=['accuracy'])
 model.summary()
+plot_model(model, show_shapes=True,show_layer_names=False,to_file='model.png')
 
 history = model.fit(
   train_generator, 
   steps_per_epoch = train_generator.n // train_batch_size,
   validation_data = validation_generator,
   validation_steps = validation_generator.n // val_batch_size,
-  epochs=50,
+  epochs=30,
   # callbacks=[reduce_lr,early_stopping]
 )
 

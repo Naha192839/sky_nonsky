@@ -21,9 +21,9 @@ test_data_dir = './dataset/test2'
 classes = ["空あり", "空なし"]
 image_size = 224
 num_classes = len(classes)
-model_name = "3C-CNN"
-keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/"+str(model_name)+".h5"
-
+model_name = "global_top"
+keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/"+str(model_name)+"_0.945.h5"
+# keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/global_bottom_0.935.h5"
 img_width, img_height = 224, 224
 
 train_batch_size = 64
@@ -133,7 +133,7 @@ for t in range(len(classes)):
   index_list = list(df2[df2['正解値']==t].index.values)
   print(index_list)
   # matplotlib 出力
-  n_cols = 7 #7列
+  n_cols = 4 #7列
   n_rows = ((len(index_list)-1)//n_cols)+1 #indexによって行は変化する
 
   fig, ax = plt.subplots(nrows=n_rows, ncols=n_cols ,figsize=(6.5, 0.9*n_rows), dpi=120)

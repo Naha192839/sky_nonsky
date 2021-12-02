@@ -19,8 +19,8 @@ test_data_dir = './dataset/test2'
 classes = ["空あり", "空なし"]
 image_size = 224
 num_classes = len(classes)
-model_name = "top_cnn"
-keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/top_cnn_nopadding.h5"
+model_name = "ResNet50"
+keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/"+str(model_name)+".h5"
 
 img_width, img_height = 224, 224
 
