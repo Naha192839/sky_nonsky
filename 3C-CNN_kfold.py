@@ -142,6 +142,7 @@ all_acc = []
 all_val_acc = []
 all_test_acc = []
 
+num = 0
 for train_index, val_index in kf.split(X_train, y_train):
     train_data = X_train[train_index]
     train_label = y_train[train_index]
@@ -219,7 +220,7 @@ for train_index, val_index in kf.split(X_train, y_train):
 
     # -----------------------------------------------------
     # ここを変えるときはモデル名も変更していください
-    input_model1 = bottom_model
+    input_model1 = global_model
     input_model2 = top_model
     input_model3 = 0
 
@@ -267,6 +268,8 @@ for train_index, val_index in kf.split(X_train, y_train):
                 two_test_generator,
                 steps= nb_test_samples // val_batch_size)
             print("test loss, test acc:", results)
+            model.save('./model/global_top_'+str(num)+'.h5')
+            num += 1
 
     #  3入力用
     else:
@@ -286,6 +289,8 @@ for train_index, val_index in kf.split(X_train, y_train):
                 three_test_generator,
                 steps=nb_test_samples // val_batch_size)
             print("test loss, test acc:", results)
+            model.save('./model/3C-CNN_'+str(num)+'.h5')
+            num += 1
     loss=history.history['loss']
     val_loss=history.history['val_loss']
     

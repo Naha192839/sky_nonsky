@@ -16,12 +16,12 @@ from keras.models import load_model
 from tensorflow.keras import models
 
 test_data_dir = './dataset/test2'
-testpic = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/b1e9ee0e-67e26f2e.jpg" 
+testpic = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/dataset_kfold/test2/空あり/50999ba6-7f803001.jpg" 
 classes = ["空あり", "空なし"]
 image_size = 224
 num_classes = len(classes)
 model_name = "ResNet50"
-keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/"+str(model_name)+".h5"
+keras_param = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/model/"+str(model_name)+"_1.h5"
 
 types = ['jpg']
 files = []
@@ -100,55 +100,57 @@ def grad_cam(input_model, x, tri_x,layer_name):
 
 model = keras.models.load_model(keras_param)
 if model_name == "ResNet50":
-    target_layer = "conv5_block3_3_conv"
+    target_layer = "conv1_conv"
+    # target_layer = "conv2_block1_3_conv"
+    #  target_layer = "block5_conv3"
 else :
     target_layer = 'conv2d_4'
 
 #-----------------------------------------------------
-# img = img_to_array(load_img(testpic, target_size=(image_size,image_size)))
-# # トリンミグ画像の読み込み
-# img_trimmig = img_to_array(load_image(testpic,model_name))
+img = img_to_array(load_img(testpic, target_size=(image_size,image_size)))
+# トリンミグ画像の読み込み
+img_trimmig = img_to_array(load_image(testpic,model_name))
 
-# prd = model.predict(np.array([img / 255.0]))
-# print(prd) # 精度の表示
-# prelabel = np.argmax(prd, axis=1)
+prd = model.predict(np.array([img / 255.0]))
+print(prd) # 精度の表示
+prelabel = np.argmax(prd, axis=1)
 
-# cam = grad_cam(model, img, img_trimmig, target_layer)
-# save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
+cam = grad_cam(model, img, img_trimmig, target_layer)
+save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
 
 
 
-# if prelabel == 0:
-#     print(">>> 空あり")
-# elif prelabel == 1:
-#     print(">>> 空なし")
+if prelabel == 0:
+    print(">>> 空あり")
+elif prelabel == 1:
+    print(">>> 空なし")
 # ----------------------------------------------------------------------------------
 
-# 空あり画像のチェック
-photos_dir = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/dataset/test2/空あり" 
-for ext in types:
-  file_path = os.path.join(photos_dir, '*.{}'.format(ext))
-  files.extend(glob.glob(file_path))
-for i in files:
-    img = img_to_array(load_img(i, target_size=(image_size,image_size)))
-    # トリンミグ画像の読み込み
-    img_trimmig = img_to_array(load_image(i,model_name))
+# # 空あり画像のチェック
+# photos_dir = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/dataset/test2/空あり" 
+# for ext in types:
+#   file_path = os.path.join(photos_dir, '*.{}'.format(ext))
+#   files.extend(glob.glob(file_path))
+# for i in files:
+#     img = img_to_array(load_img(i, target_size=(image_size,image_size)))
+#     # トリンミグ画像の読み込み
+#     img_trimmig = img_to_array(load_image(i,model_name))
 
-    prd = model.predict(np.array([img / 255.0]))
-    print(prd) # 精度の表示
-    prelabel = np.argmax(prd, axis=1)
+#     prd = model.predict(np.array([img / 255.0]))
+#     print(prd) # 精度の表示
+#     prelabel = np.argmax(prd, axis=1)
     
 
-    if prelabel == 0:
-        save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり/gradcam_"+str(datetime.datetime.today())+"-"+os.path.basename(i)),img)
-        cam = grad_cam(model, img,img_trimmig,target_layer)
-        save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
+#     if prelabel == 0:
+#         save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり/gradcam_"+str(datetime.datetime.today())+"-"+os.path.basename(i)),img)
+#         cam = grad_cam(model, img,img_trimmig,target_layer)
+#         save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
         
-    if prelabel == 1:
-        save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり→空なし/gradcam_"+str(datetime.datetime.today())+"-"+os.path.basename(i)),img)
-        cam = grad_cam(model, img, img_trimmig,target_layer)
-        save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり→空なし/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
-files = []
+#     if prelabel == 1:
+#         save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり→空なし/gradcam_"+str(datetime.datetime.today())+"-"+os.path.basename(i)),img)
+#         cam = grad_cam(model, img, img_trimmig,target_layer)
+#         save_img(os.path.join("./fig/gradcam_fig/"+str(model_name)+"/空あり→空なし/gradcam_"+str(datetime.datetime.today())+".jpg"),cam)
+# files = []
 
 # # 空なし画像のチェック
 # photos_dir = "/home/student/e18/e185701/sky_nonsky_ver2/sky_nonsky/dataset/test2/空なし" 

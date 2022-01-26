@@ -4,7 +4,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import models, layers
 from tensorflow.keras.applications import ResNet50V2,ResNet50
 from tensorflow.keras.models import Sequential, Model
-from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,GlobalAveragePooling2D,AveragePooling2D
+from tensorflow.keras.layers import Input, Flatten, Dense,Dropout,Conv2D,MaxPooling2D,ZeroPadding2D,BatchNormalization,Activation,Cropping2D,GlobalAveragePooling2D
 from tensorflow.keras import optimizers,regularizers
 from tensorflow.keras.callbacks import ReduceLROnPlateau,EarlyStopping
 from tensorflow.keras.utils import to_categorical
@@ -45,7 +45,7 @@ all_val_acc=[]
 all_test_acc=[]
 
 ep=30
-
+num = 0
 for train_index, val_index in kf.split(X_train,y_train):
     train_data=X_train[train_index]
     train_label=y_train[train_index]
@@ -68,6 +68,32 @@ for train_index, val_index in kf.split(X_train,y_train):
         layer.trainable = False
     for layer in model.layers[154:]:
         layer.trainable = True
+    # model = Sequential()
+    # model.add(Cropping2D(cropping=((0,112), (0,0)),input_shape=(img_height, img_width, 3)))
+    # model.add(ZeroPadding2D(padding=(3, 3)))
+    # model.add(Conv2D(32, (7, 7),strides=(1, 2)))
+    # model.add(Activation('relu'))
+    # model.add(ZeroPadding2D(padding=(1,1)))
+    # model.add(MaxPooling2D((3, 3),strides=(2, 2)))
+
+    # model.add(ZeroPadding2D(padding=(1,1)))
+    # model.add(Conv2D(128, (3, 3),strides=(2, 2),activation='relu'))
+
+    # model.add(ZeroPadding2D(padding=(1,1)))
+    # model.add(Conv2D(256,(3, 3),strides=(2, 2), activation='relu'))
+
+    # model.add(ZeroPadding2D(padding=(1,1)))
+    # model.add(Conv2D(512, (3, 3),strides=(2, 2), activation='relu'))
+
+
+    # model.add(Conv2D(1024,(3, 3),padding='same',activation='relu'))
+
+    # model.add(GlobalAveragePooling2D())
+    # # model.add(Flatten())
+    # # model.add(Dense(256, activation='relu'))
+    # model.add(Dense(2, activation='softmax'))
+    
+    # model.summary()
 
     model.compile(loss='categorical_crossentropy',
               optimizer=optimizers.SGD(lr=0.001, momentum=0.9,decay=0.0002),
@@ -86,10 +112,12 @@ for train_index, val_index in kf.split(X_train,y_train):
     print("Evaluate on test data")
     results = model.evaluate(
     test_generator,
-    steps=400 // 16
+    steps= 400 // 16
     )
     print("test loss, test acc:", results)
 
+    model.save('./model/ResNet50_'+str(num)+'.h5')
+    num += 1
     loss=history.history['loss']
     val_loss=history.history['val_loss']
     
